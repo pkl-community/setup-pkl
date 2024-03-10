@@ -58,6 +58,7 @@ jobs:
         uses: ./
         with:
           pkl-version: 0.25.1
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Confirm download
         run: pkl --version

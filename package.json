@@ -1,22 +1,16 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "name": "setup-pkl",
+  "description": "GitHub Action for installing Pkl",
+  "version": "0.0.1",
+  "author": "The Pkl Community",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/pkl-community/setup-pkl.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/pkl-community/setup-pkl/issues"
   },
-  "keywords": [
-    "actions",
-    "node",
-    "setup"
-  ],
   "exports": {
     ".": "./dist/index.js"
   },
@@ -35,7 +29,7 @@
     "test": "jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "jest": {
     "preset": "ts-jest",
     "verbose": true,

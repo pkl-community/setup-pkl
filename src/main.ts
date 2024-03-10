@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as gh from '@actions/github'
 import * as tc from '@actions/tool-cache'
+import { chmod } from 'fs/promises'
 
 /**
  * The main function for the action.
@@ -41,13 +42,17 @@ export async function run(): Promise<void> {
     })
 
     const pklBinaryPath = await tc.downloadTool(asset.data.browser_download_url)
+    const permissionsMode = 0o711
+    await chmod(pklBinaryPath, permissionsMode)
     const cachedPath = await tc.cacheFile(
       pklBinaryPath,
       'pkl',
       'pkl',
       pklVersion
     )
-    core.debug(`Wrote pkl to cached path: ${cachedPath}`)
+    core.debug(
+      `Wrote pkl to cached path: ${cachedPath} with permission mode ${permissionsMode}`
+    )
     core.addPath(cachedPath)
   } catch (error) {
     // Fail the workflow run if an error occurs

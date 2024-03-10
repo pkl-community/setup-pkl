@@ -32871,6 +32871,7 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const gh = __importStar(__nccwpck_require__(5438));
 const tc = __importStar(__nccwpck_require__(7784));
+const promises_1 = __nccwpck_require__(3292);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -32891,8 +32892,7 @@ async function run() {
             tag: pklVersion
         });
         core.debug(`Found release ID: ${release.data.id}`);
-        const assetId = release.data.assets.find(a => a.name === 'pkl-macos-aarch64' //'pkl-linux-amd64'
-        )?.id;
+        const assetId = release.data.assets.find(a => a.name === 'pkl-linux-amd64')?.id;
         if (!assetId) {
             throw new Error(`Unable to locate release for Pkl version: ${pklVersion}`);
         }
@@ -32903,8 +32903,10 @@ async function run() {
             asset_id: assetId
         });
         const pklBinaryPath = await tc.downloadTool(asset.data.browser_download_url);
+        const permissionsMode = 0o711;
+        await (0, promises_1.chmod)(pklBinaryPath, permissionsMode);
         const cachedPath = await tc.cacheFile(pklBinaryPath, 'pkl', 'pkl', pklVersion);
-        core.debug(`Wrote pkl to cached path: ${cachedPath}`);
+        core.debug(`Wrote pkl to cached path: ${cachedPath} with permission mode ${permissionsMode}`);
         core.addPath(cachedPath);
     }
     catch (error) {
@@ -32987,6 +32989,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

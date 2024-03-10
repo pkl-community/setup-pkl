@@ -8,6 +8,18 @@
 This is a GitHub Action to install a binary for
 [Pkl](https://github.com/apple/pkl) and add it to the PATH.
 
+> [!CAUTION]
+>
+> This GitHub Action is in PRE-RELEASE, meaning there may be unintended
+> behaviour, and there is no guarantee of stability between versions. The major
+> version is currently `v0` to reflect this.
+
+> [!NOTE]
+>
+> This is a project from the Pkl open-source
+> [community](https://github.com/pkl-community), and is not affiliated with
+> Apple in any way.
+
 ## Example Usage
 
 ```yaml

@@ -26,7 +26,7 @@ First clone the repository to your local machine. Then:
 
 1. :twisted_rightwards_arrows: Use `nvm` to select the right Node version
 
-   ```
+   ```bash
    nvm use
    ```
 
@@ -45,7 +45,7 @@ First clone the repository to your local machine. Then:
 1. :white_check_mark: Run the tests
 
    ```bash
-   $ npm test
+   npm test
    ```
 
 This action makes use of the GitHub Actions toolkit, see the

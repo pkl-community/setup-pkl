@@ -22,7 +22,7 @@ export async function run(): Promise<void> {
     const release = await octokit.rest.repos.getReleaseByTag({
       owner: 'apple',
       repo: 'pkl',
-      tag: `v${pklVersion}`
+      tag: `${pklVersion}`
     })
     const assetId = release.data.assets.find(
       a => a.name === 'pkl-linux-amd64'

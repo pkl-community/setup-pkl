@@ -5,14 +5,14 @@
 [![Check dist/](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-This is a GitHub Action to install a binary for
-[Pkl](https://github.com/apple/pkl) and add it to the PATH.
-
 > [!CAUTION]
 >
 > This GitHub Action is in PRE-RELEASE, meaning there may be unintended
 > behaviour, and there is no guarantee of stability between versions. The major
 > version is currently `v0` to reflect this.
+
+This is a GitHub Action to install a binary for
+[Pkl](https://github.com/apple/pkl) and add it to the PATH.
 
 > [!NOTE]
 >
@@ -29,6 +29,15 @@ steps:
     with:
       pkl-version: 0.25.2
 ```
+
+### Options
+
+- `pkl-version` - the Pkl version to use. It must be a valid tag from the
+  [official Apple releases](https://github.com/apple/pkl/releases)
+- `github-token` - the GitHub token that will be used to download the Pkl binary
+  asset (this action uses the GitHub API to find the download link for the given
+  release). Defaults to `${{ github.token }}`, which should satisfy almost all
+  cases (as its being used to download a public asset)
 
 ## Development
 

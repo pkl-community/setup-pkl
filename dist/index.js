@@ -32888,21 +32888,21 @@ async function run() {
         const release = await octokit.rest.repos.getReleaseByTag({
             owner: 'apple',
             repo: 'pkl',
-            tag: `v${pklVersion}`
+            tag: pklVersion
         });
+        core.debug(`Found release ID: ${release.data.id}`);
         const assetId = release.data.assets.find(a => a.name === 'pkl-linux-amd64')?.id;
         if (!assetId) {
             throw new Error(`Unable to locate release for Pkl version: ${pklVersion}`);
         }
+        core.debug(`Found asset ID: ${assetId}`);
         const asset = await octokit.rest.repos.getReleaseAsset({
             owner: 'apple',
             repo: 'pkl',
             asset_id: assetId
         });
-        const pklBinaryPath = await tc.downloadTool(asset.data.url);
-        const pklBinaryExtractedFolder = await tc.extractTar(pklBinaryPath);
-        const cachedPath = await tc.cacheDir(pklBinaryExtractedFolder, 'pkl', pklVersion);
-        core.addPath(cachedPath);
+        const pklBinaryPath = await tc.downloadTool(asset.data.browser_download_url);
+        core.addPath(pklBinaryPath);
     }
     catch (error) {
         // Fail the workflow run if an error occurs

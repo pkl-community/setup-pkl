@@ -32891,7 +32891,8 @@ async function run() {
             tag: pklVersion
         });
         core.debug(`Found release ID: ${release.data.id}`);
-        const assetId = release.data.assets.find(a => a.name === 'pkl-linux-amd64')?.id;
+        const assetId = release.data.assets.find(a => a.name === 'pkl-macos-aarch64' //'pkl-linux-amd64'
+        )?.id;
         if (!assetId) {
             throw new Error(`Unable to locate release for Pkl version: ${pklVersion}`);
         }
@@ -32902,7 +32903,9 @@ async function run() {
             asset_id: assetId
         });
         const pklBinaryPath = await tc.downloadTool(asset.data.browser_download_url);
-        core.addPath(pklBinaryPath);
+        const cachedPath = await tc.cacheFile(pklBinaryPath, 'pkl', 'pkl', pklVersion);
+        core.debug(`Wrote pkl to cached path: ${cachedPath}`);
+        core.addPath(cachedPath);
     }
     catch (error) {
         // Fail the workflow run if an error occurs

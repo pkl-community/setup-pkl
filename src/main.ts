@@ -41,7 +41,14 @@ export async function run(): Promise<void> {
     })
 
     const pklBinaryPath = await tc.downloadTool(asset.data.browser_download_url)
-    core.addPath(pklBinaryPath)
+    const cachedPath = await tc.cacheFile(
+      pklBinaryPath,
+      'pkl',
+      'pkl',
+      pklVersion
+    )
+    core.debug(`Wrote pkl to cached path: ${cachedPath}`)
+    core.addPath(cachedPath)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

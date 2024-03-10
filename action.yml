@@ -1,24 +1,21 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Setup Pkl'
+description: 'Setup Pkl by installing, downloading, and adding it to the path.'
+author: 'Pkl Community'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'star'
+  color: 'green'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  pkl-version:
+    description: The Pkl version to install.
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+  github-token:
+    description:
+      A GitHub token to use for fetching the GitHub release asset from
+      apple/pkl.
+    default: ${{ github.token }}
 
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'node20'
+  main: 'dist/index.js'

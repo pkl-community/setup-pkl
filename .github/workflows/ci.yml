@@ -44,8 +44,8 @@ jobs:
         id: npm-ci-test
         run: npm run ci-test
 
-  test-action:
-    name: GitHub Actions Test
+  test-action-linux:
+    name: GitHub Actions Test Linux
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +57,64 @@ jobs:
         id: test-action
         uses: ./
         with:
-          pkl-version: 0.25.1
+          pkl-version: 0.26.0
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Confirm download
+        run: pkl --version
+
+  test-action-macos-amd64:
+    name: GitHub Actions Test MacOS amd64
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Test Local Action
+        id: test-action
+        uses: ./
+        with:
+          pkl-version: 0.26.0
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Confirm download
+        run: pkl --version
+
+  test-action-macos-aarch64:
+    name: GitHub Actions Test MacOS aarch64
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Test Local Action
+        id: test-action
+        uses: ./
+        with:
+          pkl-version: 0.26.0
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Confirm download
+        run: pkl --version
+
+  test-action-windows:
+    name: GitHub Actions Test Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Test Local Action
+        id: test-action
+        uses: ./
+        with:
+          pkl-version: 0.26.0
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Confirm download

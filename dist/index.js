@@ -32866,11 +32866,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const gh = __importStar(__nccwpck_require__(5438));
 const tc = __importStar(__nccwpck_require__(7784));
+const node_os_1 = __importDefault(__nccwpck_require__(612));
 const promises_1 = __nccwpck_require__(3292);
 /**
  * The main function for the action.
@@ -32892,7 +32896,7 @@ async function run() {
             tag: pklVersion
         });
         core.debug(`Found release ID: ${release.data.id}`);
-        const assetId = release.data.assets.find(a => a.name === 'pkl-linux-amd64')?.id;
+        const assetId = release.data.assets.find(a => a.name === findAssetName())?.id;
         if (!assetId) {
             throw new Error(`Unable to locate release for Pkl version: ${pklVersion}`);
         }
@@ -32916,6 +32920,26 @@ async function run() {
     }
 }
 exports.run = run;
+function findAssetName() {
+    const op = node_os_1.default.platform();
+    const arch = node_os_1.default.arch();
+    core.info(`Try to find asset name for: ${op}-${arch}`);
+    switch (op) {
+        case 'linux':
+            return 'pkl-linux-amd64';
+        case 'darwin':
+            switch (arch) {
+                case 'x64':
+                    return 'pkl-macos-amd64';
+                case 'arm64':
+                    return 'pkl-macos-aarch64';
+            }
+            break;
+        case 'win32':
+            return 'pkl-windows-amd64.exe';
+    }
+    throw new Error(`Couldn't find asset name for ${op}-${arch}`);
+}
 
 
 /***/ }),
@@ -33037,6 +33061,14 @@ module.exports = require("net");
 
 "use strict";
 module.exports = require("node:events");
+
+/***/ }),
+
+/***/ 612:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:os");
 
 /***/ }),
 

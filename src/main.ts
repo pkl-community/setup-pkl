@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as gh from '@actions/github'
 import * as tc from '@actions/tool-cache'
+import os from 'node:os'
 import { chmod } from 'fs/promises'
 
 /**
@@ -28,7 +29,7 @@ export async function run(): Promise<void> {
     core.debug(`Found release ID: ${release.data.id}`)
 
     const assetId = release.data.assets.find(
-      a => a.name === 'pkl-linux-amd64'
+      a => a.name === findAssetName()
     )?.id
     if (!assetId) {
       throw new Error(`Unable to locate release for Pkl version: ${pklVersion}`)
@@ -58,4 +59,27 @@ export async function run(): Promise<void> {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
   }
+}
+
+function findAssetName(): string {
+  const op = os.platform()
+  const arch = os.arch()
+
+  core.info(`Try to find asset name for: ${op}-${arch}`)
+  switch (op) {
+    case 'linux':
+      return 'pkl-linux-amd64'
+    case 'darwin':
+      switch (arch) {
+        case 'x64':
+          return 'pkl-macos-amd64'
+        case 'arm64':
+          return 'pkl-macos-aarch64'
+      }
+      break
+    case 'win32':
+      return 'pkl-windows-amd64.exe'
+  }
+
+  throw new Error(`Couldn't find asset name for ${op}-${arch}`)
 }

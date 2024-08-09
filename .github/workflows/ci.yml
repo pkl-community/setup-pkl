@@ -44,7 +44,7 @@ jobs:
         id: npm-ci-test
         run: npm run ci-test
 
-  test-action-different-os:
+  test-action:
     strategy:
       matrix:
         # Right now macos-13 is amd64 while macos-14 is aarch64 (M1)

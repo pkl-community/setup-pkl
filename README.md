@@ -33,11 +33,7 @@ steps:
 ### Options
 
 - `pkl-version` - the Pkl version to use. It must be a valid tag from the
-  [official Apple releases](https://github.com/apple/pkl/releases)
-- `github-token` - the GitHub token that will be used to download the Pkl binary
-  asset (this action uses the GitHub API to find the download link for the given
-  release). Defaults to `${{ github.token }}`, which should satisfy almost all
-  cases (as its being used to download a public asset)
+  [official Apple releases](https://github.com/apple/pkl/releases). Defaults to `0.26.3`.
 
 ## Development
 

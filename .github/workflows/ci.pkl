@@ -1,0 +1,83 @@
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+
+name = "Continuous Integration"
+
+on {
+  pull_request {}
+  push {
+    branches {
+      "main"
+    }
+  }
+}
+
+permissions {
+  contents = "read"
+}
+
+jobs {
+  ["test-typescript"] {
+    name = "TypeScript Tests"
+    `runs-on` = "ubuntu-latest"
+    steps {
+      new {
+        name = "Checkout"
+        uses = "actions/checkout@v4"
+      }
+      new {
+        name = "Setup Node.js"
+        uses = "actions/setup-node@v4"
+        with {
+          ["node-version-file"] = ".nvrc"
+          ["cache"] = "npm"
+        }
+      }
+      new {
+        name = "Install Dependencies"
+        run = "npm ci"
+      }
+      new {
+        name = "Check Format"
+        run = "npm run format:check"
+      }
+      new {
+        name = "Lint"
+        run = "npm run lint"
+      }
+      new {
+        name = "Test"
+        run = "npm run ci-test"
+      }
+    }
+  }
+  ["test-action"] {
+    strategy {
+      matrix {
+        ["os"] = new {
+          "ubuntu-latest"
+          "macos-13" // macos-13 is amd64
+          "macos-14" // macos-14 is aarch64 (M1)
+          "windows-latest"
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.os }}"
+    steps {
+      new {
+        name = "Checkout"
+        uses = "actions/checkout@v4"
+      }
+      new {
+        name = "Test Local Action"
+        uses = "./"
+        with {
+          ["pkl-version"] = "0.26.0"
+        }
+      }
+      new {
+        name = "Confirm download"
+        run = "pkl --version"
+      }
+    }
+  }
+}

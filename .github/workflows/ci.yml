@@ -1,66 +1,49 @@
-name: Continuous Integration
+# Do not modify!
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
 
-on:
-  pull_request:
-    branches:
-      - main
+name: Continuous Integration
+'on':
+  pull_request: {}
   push:
     branches:
-      - main
-
+    - main
 permissions:
   contents: read
-
 jobs:
   test-typescript:
     name: TypeScript Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install Dependencies
-        id: npm-ci
-        run: npm ci
-
-      - name: Check Format
-        id: npm-format-check
-        run: npm run format:check
-
-      - name: Lint
-        id: npm-lint
-        run: npm run lint
-
-      - name: Test
-        id: npm-ci-test
-        run: npm run ci-test
-
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvrc
+        cache: npm
+    - name: Install Dependencies
+      run: npm ci
+    - name: Check Format
+      run: npm run format:check
+    - name: Lint
+      run: npm run lint
+    - name: Test
+      run: npm run ci-test
   test-action:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Right now macos-13 is amd64 while macos-14 is aarch64 (M1)
-        os: [ubuntu-latest, macos-13, macos-14, windows-latest]
-    runs-on: ${{ matrix.os }}
-
+        os:
+        - ubuntu-latest
+        - macos-13
+        - macos-14
+        - windows-latest
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-
-      - name: Test Local Action
-        id: test-action
-        uses: ./
-        with:
-          pkl-version: 0.26.0
-
-      - name: Confirm download
-        run: pkl --version
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Test Local Action
+      uses: ./
+      with:
+        pkl-version: 0.26.0
+    - name: Confirm download
+      run: pkl --version

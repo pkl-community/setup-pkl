@@ -1,0 +1,10 @@
+#!/bin/sh
+
+files=`git diff --cached --name-status`
+
+for file in $files; do
+  if [[ $file == *.pkl ]]; then
+    pkl eval "$file" -o "${file%.pkl}.yml"
+    git add "${file%.pkl}.yml"
+  fi
+done

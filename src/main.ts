@@ -9,7 +9,7 @@ import { chmod } from 'fs/promises'
  */
 export async function run(): Promise<void> {
   try {
-    const pklVersion = core.getInput('pkl-version')
+    const pklVersion = core.getInput('pkl-version', { required: true })
     core.debug(`Installing Pkl version ${pklVersion}`)
 
     // Try to retrieve from cache first

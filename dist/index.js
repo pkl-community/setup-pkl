@@ -28610,7 +28610,7 @@ const promises_1 = __nccwpck_require__(3292);
  */
 async function run() {
     try {
-        const pklVersion = core.getInput('pkl-version');
+        const pklVersion = core.getInput('pkl-version', { required: true });
         core.debug(`Installing Pkl version ${pklVersion}`);
         // Try to retrieve from cache first
         let cachedPath = tc.find('pkl', pklVersion);

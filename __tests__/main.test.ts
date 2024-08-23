@@ -24,11 +24,30 @@ let cacheFileMock: jest.SpiedFunction<typeof tc.cacheFile>
 let addPathMock: jest.SpiedFunction<typeof core.addPath>
 let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
 
+describe('action without pkl-version', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    getInputMock = jest.spyOn(core, 'getInput')
+    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
+  })
+
+  it('fails if pkl-version is not provided', async () => {
+    await main.run()
+
+    expect(setFailedMock).toHaveBeenCalledWith(
+      'Input required and not supplied: pkl-version'
+    )
+  })
+})
+
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => name === 'pkl-version' ? return '0.26.3' : return '')
+    getInputMock = jest
+      .spyOn(core, 'getInput')
+      .mockImplementation(name => (name === 'pkl-version' ? '0.26.3' : ''))
 
     findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
     downloadToolMock = jest

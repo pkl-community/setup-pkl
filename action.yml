@@ -9,8 +9,7 @@ branding:
 inputs:
   pkl-version:
     description: The Pkl version to install.
-    required: false
-    default: '0.26.3'
+    required: true
 
 runs:
   using: 'node20'

@@ -32,8 +32,8 @@ steps:
 
 ### Options
 
-- `pkl-version` - the Pkl version to use. It must be a valid tag from the
-  [official Apple releases](https://github.com/apple/pkl/releases). Defaults to `0.26.3`.
+- `pkl-version` - (Required) The Pkl version to use. It must be a valid tag from the
+  [official Apple releases](https://github.com/apple/pkl/releases).
 
 ## Development
 

@@ -28,10 +28,7 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => {
-      if (name === 'pkl-version') return '0.26.3'
-      return ''
-    })
+    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => name === 'pkl-version' ? return '0.26.3' : return '')
 
     findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
     downloadToolMock = jest

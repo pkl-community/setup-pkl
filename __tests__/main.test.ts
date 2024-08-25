@@ -35,6 +35,7 @@ describe('action without pkl-version', () => {
   it('fails if pkl-version is not provided', async () => {
     await main.run()
 
+    expect(getInputMock).toHaveBeenCalledWith('pkl-version', { required: true })
     expect(setFailedMock).toHaveBeenCalledWith(
       'Input required and not supplied: pkl-version'
     )
@@ -52,10 +53,10 @@ describe('action', () => {
     findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
     downloadToolMock = jest
       .spyOn(tc, 'downloadTool')
-      .mockImplementation(() => Promise.resolve('/tmp/pkl'))
+      .mockImplementation(async () => Promise.resolve('/tmp/pkl'))
     cacheFileMock = jest
       .spyOn(tc, 'cacheFile')
-      .mockImplementation(() => Promise.resolve('/cached/path'))
+      .mockImplementation(async () => Promise.resolve('/cached/path'))
     addPathMock = jest.spyOn(core, 'addPath').mockImplementation()
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
   })
@@ -86,7 +87,7 @@ describe('action', () => {
 
   it('sets a failed status if neither cached nor downloadable', async () => {
     findCacheMock.mockImplementation(() => '')
-    downloadToolMock.mockImplementation(() =>
+    downloadToolMock.mockImplementation(async () =>
       Promise.reject(new Error('Download failed'))
     )
 

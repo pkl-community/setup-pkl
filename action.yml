@@ -10,11 +10,6 @@ inputs:
   pkl-version:
     description: The Pkl version to install.
     required: true
-  github-token:
-    description:
-      A GitHub token to use for fetching the GitHub release asset from
-      apple/pkl.
-    default: ${{ github.token }}
 
 runs:
   using: 'node20'

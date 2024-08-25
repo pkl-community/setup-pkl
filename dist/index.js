@@ -28599,7 +28599,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
+exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const node_os_1 = __importDefault(__nccwpck_require__(612));
@@ -28641,7 +28641,6 @@ async function run() {
             core.setFailed(error.message);
     }
 }
-exports.run = run;
 function findAssetName() {
     const op = node_os_1.default.platform();
     const arch = node_os_1.default.arch();

@@ -1,8 +1,9 @@
 import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
 
-function checkout(): GitHubAction.Step = new {
-  name = "checkout"
+function checkout(customWith: Mapping<String, String|Number|Boolean>?): GitHubAction.Step = new {
+  name = "Checkout"
   uses = "actions/checkout@v4"
+  with = customWith
 }
 
 function installPkl(): GitHubAction.Step = new {
@@ -13,7 +14,27 @@ function installPkl(): GitHubAction.Step = new {
   }
 }
 
+function installNode(): GitHubAction.Step = new {
+  name = "Install node"
+  uses = "actions/setup-node@v4"
+  with {
+    ["node-version-file"] = ".nvmrc"
+    ["cache"] = "npm"
+  }
+}
+
+function installNodeDeps(): GitHubAction.Step = new {
+  name = "Install Dependencies"
+  run = "npm ci"
+}
+
 function checkoutAndInstallPkl(): Listing<GitHubAction.Step> = new {
-  checkout()
+  checkout(null)
   installPkl()
+}
+
+function checkoutAndSetupNode(customCheckoutWith: Mapping<String, String|Number|Boolean>?): Listing<GitHubAction.Step> = new {
+  checkout(customCheckoutWith)
+  installNode()
+  installNodeDeps()
 }

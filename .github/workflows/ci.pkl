@@ -1,4 +1,5 @@
 amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
 
 name = "Continuous Integration"
 
@@ -20,22 +21,7 @@ jobs {
     name = "TypeScript Tests"
     `runs-on` = "ubuntu-latest"
     steps {
-      new {
-        name = "Checkout"
-        uses = "actions/checkout@v4"
-      }
-      new {
-        name = "Setup Node.js"
-        uses = "actions/setup-node@v4"
-        with {
-          ["node-version-file"] = ".nvmrc"
-          ["cache"] = "npm"
-        }
-      }
-      new {
-        name = "Install Dependencies"
-        run = "npm ci"
-      }
+      ...Steps.checkoutAndSetupNode(null)
       new {
         name = "Check Format"
         run = "npm run format:check"
@@ -63,15 +49,12 @@ jobs {
     }
     `runs-on` = "${{ matrix.os }}"
     steps {
-      new {
-        name = "Checkout"
-        uses = "actions/checkout@v4"
-      }
+      Steps.checkout(null)
       new {
         name = "Test Local Action"
         uses = "./"
         with {
-          ["pkl-version"] = "0.26.0"
+          ["pkl-version"] = "0.26.3"
         }
       }
       new {

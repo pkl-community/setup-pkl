@@ -1,4 +1,5 @@
 amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
 
 name = "Lint Codebase"
 
@@ -22,25 +23,11 @@ jobs {
     name = "Lint Codebase"
     `runs-on` = "ubuntu-latest"
     steps {
-      new {
-        name = "Checkout"
-        uses = "actions/checkout@v4"
-        with {
+      ...Steps.checkoutAndSetupNode(
+        new Mapping<String, String|Number|Boolean> {
           ["fetch-depth"] = 0
         }
-      }
-      new {
-        name = "Setup Node.js"
-        uses = "actions/setup-node@v4"
-        with {
-          ["node-version-file"] = ".nvmrc"
-          ["cache"] = "npm"
-        }
-      }
-      new {
-        name = "Install Dependencies"
-        run = "npm ci"
-      }
+      )
       new {
         name = "Lint Codebase"
         uses = "super-linter/super-linter/slim@v6"

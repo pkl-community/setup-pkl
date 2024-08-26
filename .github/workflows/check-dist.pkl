@@ -1,4 +1,5 @@
 amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
 
 // In TypeScript actions, `dist/` is a special directory. When you reference
 // an action with the `uses:` property, `dist/index.js` is the code that will be
@@ -29,22 +30,7 @@ jobs {
     name = "Check Dist"
     `runs-on` = "ubuntu-latest"
     steps {
-      new {
-        name = "Checkout"
-        uses = "actions/checkout@v4"
-      }
-      new {
-        name = "Setup Node.js"
-        uses = "actions/setup-node@v4"
-        with {
-          ["node-version-file"] = ".nvmrc"
-          ["cache"] = "npm"
-        }
-      }
-      new {
-        name = "Install Dependencies"
-        run = "npm ci"
-      }
+      ...Steps.checkoutAndSetupNode(null)
       new {
         name = "Build dist/ Directory"
         run = "npm run bundle"

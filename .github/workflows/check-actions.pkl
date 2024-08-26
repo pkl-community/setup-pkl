@@ -7,6 +7,10 @@ on {
   push {}
 }
 
+permissions {
+  contents = "read"
+}
+
 jobs {
   ["check-actions"] {
     name = "Check Actions converted"

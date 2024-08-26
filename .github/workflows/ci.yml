@@ -16,7 +16,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Setup Node.js
+    - name: Install node
       uses: actions/setup-node@v4
       with:
         node-version-file: .nvmrc
@@ -44,6 +44,6 @@ jobs:
     - name: Test Local Action
       uses: ./
       with:
-        pkl-version: 0.26.0
+        pkl-version: 0.26.3
     - name: Confirm download
       run: pkl --version

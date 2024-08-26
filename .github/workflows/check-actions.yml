@@ -1,0 +1,24 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
+
+name: Check Pkl Actions Converted
+'on':
+  push: {}
+jobs:
+  check-actions:
+    name: Check Actions converted
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Install pkl
+      uses: pkl-community/setup-pkl@v0
+      with:
+        pkl-version: 0.26.3
+    - name: Convert pkl actions to yaml
+      run: |-
+        for file in .github/workflows/*.pkl; do
+          pkl eval "$file" -o "${file/.pkl/.yml}"
+        done
+    - name: Verify if pkl actions are converted
+      run: git diff --exit-code

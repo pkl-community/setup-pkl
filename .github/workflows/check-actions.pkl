@@ -1,0 +1,30 @@
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
+
+name = "Check Pkl Actions Converted"
+
+on {
+  push {}
+}
+
+jobs {
+  ["check-actions"] {
+    name = "Check Actions converted"
+    `runs-on` = "ubuntu-latest"
+    steps {
+      ...Steps.checkoutAndInstallPkl()
+      new {
+        name = "Convert pkl actions to yaml"
+        run = """
+          for file in .github/workflows/*.pkl; do
+            pkl eval "$file" -o "${file/.pkl/.yml}"
+          done
+          """
+      }
+      new {
+        name = "Verify if pkl actions are converted"
+        run = "git diff --exit-code"
+      }
+    }
+  }
+}

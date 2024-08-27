@@ -26,6 +26,7 @@ jobs:
     - name: Build dist/ Directory
       run: npm run bundle
     - name: Compare Directories
+      id: diff
       run: |-
         if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
           echo "Detected uncommitted changes after build. See status below:"

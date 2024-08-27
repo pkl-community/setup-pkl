@@ -21,7 +21,7 @@ jobs {
         name = "Convert pkl actions to yaml"
         run = """
           for file in .github/workflows/*.pkl; do
-            pkl eval "$file" -o "${file/.pkl/.yml}"
+            pkl eval "$file" -o "${file/.pkl/generated.yml}"
           done
           """
       }

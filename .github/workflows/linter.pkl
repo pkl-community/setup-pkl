@@ -23,11 +23,13 @@ jobs {
     name = "Lint Codebase"
     `runs-on` = "ubuntu-latest"
     steps {
-      ...Steps.checkoutAndSetupNode(
-        new Mapping<String, String|Number|Boolean> {
+      (Steps.checkout) {
+        with {
           ["fetch-depth"] = 0
         }
-      )
+      }
+      Steps.installNode
+      Steps.installNodeDeps
       new {
         name = "Lint Codebase"
         uses = "super-linter/super-linter/slim@v6"

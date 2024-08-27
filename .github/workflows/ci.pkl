@@ -21,7 +21,7 @@ jobs {
     name = "TypeScript Tests"
     `runs-on` = "ubuntu-latest"
     steps {
-      ...Steps.checkoutAndSetupNode(null)
+      ...Steps.checkoutAndSetupNode
       new {
         name = "Check Format"
         run = "npm run format:check"
@@ -49,7 +49,7 @@ jobs {
     }
     `runs-on` = "${{ matrix.os }}"
     steps {
-      Steps.checkout(null)
+      Steps.checkout
       new {
         name = "Test Local Action"
         uses = "./"

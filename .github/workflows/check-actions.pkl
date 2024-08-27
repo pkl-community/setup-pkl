@@ -16,7 +16,7 @@ jobs {
     name = "Check Actions converted"
     `runs-on` = "ubuntu-latest"
     steps {
-      ...Steps.checkoutAndInstallPkl()
+      ...Steps.checkoutAndInstallPkl
       new {
         name = "Convert pkl actions to yaml"
         run = """

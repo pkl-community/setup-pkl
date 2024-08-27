@@ -1,12 +1,11 @@
 import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
 
-function checkout(customWith: Mapping<String, String|Number|Boolean>?): GitHubAction.Step = new {
+checkout: GitHubAction.Step = new {
   name = "Checkout"
   uses = "actions/checkout@v4"
-  with = customWith
 }
 
-function installPkl(): GitHubAction.Step = new {
+installPkl: GitHubAction.Step = new {
   name = "Install pkl"
   uses = "pkl-community/setup-pkl@v0"
   with {
@@ -14,7 +13,7 @@ function installPkl(): GitHubAction.Step = new {
   }
 }
 
-function installNode(): GitHubAction.Step = new {
+installNode: GitHubAction.Step = new {
   name = "Install node"
   uses = "actions/setup-node@v4"
   with {
@@ -23,18 +22,18 @@ function installNode(): GitHubAction.Step = new {
   }
 }
 
-function installNodeDeps(): GitHubAction.Step = new {
+installNodeDeps: GitHubAction.Step = new {
   name = "Install Dependencies"
   run = "npm ci"
 }
 
-function checkoutAndInstallPkl(): Listing<GitHubAction.Step> = new {
-  checkout(null)
-  installPkl()
+checkoutAndInstallPkl: Listing<GitHubAction.Step> = new {
+  checkout
+  installPkl
 }
 
-function checkoutAndSetupNode(customCheckoutWith: Mapping<String, String|Number|Boolean>?): Listing<GitHubAction.Step> = new {
-  checkout(customCheckoutWith)
-  installNode()
-  installNodeDeps()
+checkoutAndSetupNode: Listing<GitHubAction.Step> = new {
+  checkout
+  installNode
+  installNodeDeps
 }

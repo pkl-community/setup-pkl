@@ -30,7 +30,7 @@ jobs {
     name = "Check Dist"
     `runs-on` = "ubuntu-latest"
     steps {
-      ...Steps.checkoutAndSetupNode(null)
+      ...Steps.checkoutAndSetupNode
       new {
         name = "Build dist/ Directory"
         run = "npm run bundle"

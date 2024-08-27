@@ -67,11 +67,5 @@ jobs:
         if: matrix.os != 'windows-latest'
 
       - name: Confirm download (windows)
-        run: |
-          $result = pkl --version | Select-String -Pattern "Pkl 0.26.0" -Quiet
-          if($result -eq "True") {
-          exit 0
-          } else {
-          exit 1
-          }
+        run: .github/workflows/Check-Version.ps1 "Pkl 0.26.0"
         if: matrix.os == 'windows-latest'

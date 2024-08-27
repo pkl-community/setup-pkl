@@ -28595,15 +28595,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
-const node_os_1 = __importDefault(__nccwpck_require__(612));
 const promises_1 = __nccwpck_require__(3292);
+const platform_1 = __nccwpck_require__(2999);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -28618,8 +28615,8 @@ async function run() {
             core.debug(`Found cached Pkl version at ${cachedPath}`);
         }
         else {
-            const assetName = findAssetName();
-            const downloadUrl = `https://github.com/apple/pkl/releases/download/${pklVersion}/${assetName}`;
+            const platformInfo = (0, platform_1.determinePlatformInfo)();
+            const downloadUrl = `https://github.com/apple/pkl/releases/download/${pklVersion}/${platformInfo.githubSourceAssetName}`;
             core.debug(`Download URL: ${downloadUrl}`);
             // Download the PKL binary
             const pklBinaryPath = await tc.downloadTool(downloadUrl);
@@ -28629,7 +28626,7 @@ async function run() {
             await (0, promises_1.chmod)(pklBinaryPath, permissionsMode);
             core.debug(`Set executable permissions on: ${pklBinaryPath}`);
             // Cache the downloaded file
-            cachedPath = await tc.cacheFile(pklBinaryPath, 'pkl', 'pkl', pklVersion);
+            cachedPath = await tc.cacheFile(pklBinaryPath, platformInfo.targetFileName, 'pkl', pklVersion);
             core.debug(`Cached PKL binary to: ${cachedPath}`);
         }
         core.addPath(cachedPath);
@@ -28641,25 +28638,104 @@ async function run() {
             core.setFailed(error.message);
     }
 }
-function findAssetName() {
-    const op = node_os_1.default.platform();
-    const arch = node_os_1.default.arch();
-    core.info(`Try to find asset name for: ${op}-${arch}`);
-    switch (op) {
+
+
+/***/ }),
+
+/***/ 2999:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.determinePlatformInfo = determinePlatformInfo;
+const node_os_1 = __importDefault(__nccwpck_require__(612));
+var Platform;
+(function (Platform) {
+    Platform[Platform["Linux"] = 0] = "Linux";
+    Platform[Platform["MacOS"] = 1] = "MacOS";
+    Platform[Platform["Windows"] = 2] = "Windows";
+})(Platform || (Platform = {}));
+var Architecture;
+(function (Architecture) {
+    Architecture[Architecture["arm64"] = 0] = "arm64";
+    Architecture[Architecture["x64"] = 1] = "x64";
+})(Architecture || (Architecture = {}));
+function determinePlatformInfo() {
+    const plat = determineOS();
+    const arch = determineArch();
+    return {
+        plat,
+        arch,
+        githubSourceAssetName: determineGithubAsset(plat, arch),
+        targetFileName: determineTargetFileName(plat)
+    };
+}
+function determineOS() {
+    switch (node_os_1.default.platform()) {
         case 'linux':
-            return 'pkl-linux-amd64';
+            return Platform.Linux;
         case 'darwin':
-            switch (arch) {
-                case 'x64':
-                    return 'pkl-macos-amd64';
-                case 'arm64':
-                    return 'pkl-macos-aarch64';
-            }
-            break;
+            return Platform.MacOS;
         case 'win32':
-            return 'pkl-windows-amd64.exe';
+            return Platform.Windows;
+        default:
+            throw new Error('Unsupported platform');
     }
-    throw new Error(`Couldn't find asset name for ${op}-${arch}`);
+}
+function determineArch() {
+    switch (node_os_1.default.arch()) {
+        case 'arm64':
+            return Architecture.arm64;
+        case 'x64':
+            return Architecture.x64;
+        default:
+            throw new Error('Unsupported architecture');
+    }
+}
+function determineGithubAsset(plat, arch) {
+    switch (plat) {
+        case Platform.Linux:
+            switch (arch) {
+                case Architecture.arm64:
+                    return 'pkl-linux-aarch64';
+                case Architecture.x64:
+                    return 'pkl-linux-amd64';
+                default:
+                    throw new Error('Unsupported architecture');
+            }
+        case Platform.MacOS:
+            switch (arch) {
+                case Architecture.arm64:
+                    return 'pkl-macos-aarch64';
+                case Architecture.x64:
+                    return 'pkl-macos-amd64';
+                default:
+                    throw new Error('Unsupported architecture');
+            }
+        case Platform.Windows:
+            switch (arch) {
+                case Architecture.arm64:
+                    throw new Error('Windows arm not yet supported');
+                case Architecture.x64:
+                    return 'pkl-windows-amd64.exe';
+                default:
+                    throw new Error('Unsupported architecture');
+            }
+        default:
+            throw new Error('Unsupported platform');
+    }
+}
+function determineTargetFileName(plat) {
+    switch (plat) {
+        case Platform.Windows:
+            return 'pkl.exe';
+        default:
+            return 'pkl';
+    }
 }
 
 

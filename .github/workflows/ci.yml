@@ -62,5 +62,16 @@ jobs:
         with:
           pkl-version: 0.26.0
 
-      - name: Confirm download
-        run: pkl --version
+      - name: Confirm download (unix)
+        run: pkl --version | grep "Pkl 0.26.0"
+        if: matrix.os != 'windows-latest'
+
+      - name: Confirm download (windows)
+        run: |
+          $result = pkl --version | Select-String -Pattern "Pkl 0.26.0" -Quiet
+          if($result -eq "True") {
+          exit 0
+          } else {
+          exit 1
+          }
+        if: matrix.os == 'windows-latest'

@@ -1,19 +1,9 @@
 import os from 'node:os'
 
-enum Platform {
-  Linux,
-  MacOS,
-  Windows
-}
-
-enum Architecture {
-  arm64,
-  x64
-}
+type Platform = 'linux' | 'macos' | 'windows'
+type Architecture = 'amd64' | 'aarch64'
 
 type PlatformInfo = {
-  plat: Platform
-  arch: Architecture
   githubSourceAssetName: string
   targetFileName: string
 }
@@ -23,8 +13,6 @@ export function determinePlatformInfo(): PlatformInfo {
   const arch = determineArch()
 
   return {
-    plat,
-    arch,
     githubSourceAssetName: determineGithubAsset(plat, arch),
     targetFileName: determineTargetFileName(plat)
   }
@@ -33,11 +21,11 @@ export function determinePlatformInfo(): PlatformInfo {
 function determineOS(): Platform {
   switch (os.platform()) {
     case 'linux':
-      return Platform.Linux
+      return 'linux'
     case 'darwin':
-      return Platform.MacOS
+      return 'macos'
     case 'win32':
-      return Platform.Windows
+      return 'windows'
     default:
       throw new Error('Unsupported platform')
   }
@@ -46,9 +34,9 @@ function determineOS(): Platform {
 function determineArch(): Architecture {
   switch (os.arch()) {
     case 'arm64':
-      return Architecture.arm64
+      return 'aarch64'
     case 'x64':
-      return Architecture.x64
+      return 'amd64'
     default:
       throw new Error('Unsupported architecture')
   }
@@ -56,29 +44,29 @@ function determineArch(): Architecture {
 
 function determineGithubAsset(plat: Platform, arch: Architecture): string {
   switch (plat) {
-    case Platform.Linux:
+    case 'linux':
       switch (arch) {
-        case Architecture.arm64:
+        case 'aarch64':
           return 'pkl-linux-aarch64'
-        case Architecture.x64:
+        case 'amd64':
           return 'pkl-linux-amd64'
         default:
           throw new Error('Unsupported architecture')
       }
-    case Platform.MacOS:
+    case 'macos':
       switch (arch) {
-        case Architecture.arm64:
+        case 'aarch64':
           return 'pkl-macos-aarch64'
-        case Architecture.x64:
+        case 'amd64':
           return 'pkl-macos-amd64'
         default:
           throw new Error('Unsupported architecture')
       }
-    case Platform.Windows:
+    case 'windows':
       switch (arch) {
-        case Architecture.arm64:
+        case 'aarch64':
           throw new Error('Windows arm not yet supported')
-        case Architecture.x64:
+        case 'amd64':
           return 'pkl-windows-amd64.exe'
         default:
           throw new Error('Unsupported architecture')
@@ -90,7 +78,7 @@ function determineGithubAsset(plat: Platform, arch: Architecture): string {
 
 function determineTargetFileName(plat: Platform): string {
   switch (plat) {
-    case Platform.Windows:
+    case 'windows':
       return 'pkl.exe'
     default:
       return 'pkl'

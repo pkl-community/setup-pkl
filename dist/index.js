@@ -28684,37 +28684,10 @@ function determineArch() {
     }
 }
 function determineGithubAsset(plat, arch) {
-    switch (plat) {
-        case 'linux':
-            switch (arch) {
-                case 'aarch64':
-                    return 'pkl-linux-aarch64';
-                case 'amd64':
-                    return 'pkl-linux-amd64';
-                default:
-                    throw new Error('Unsupported architecture');
-            }
-        case 'macos':
-            switch (arch) {
-                case 'aarch64':
-                    return 'pkl-macos-aarch64';
-                case 'amd64':
-                    return 'pkl-macos-amd64';
-                default:
-                    throw new Error('Unsupported architecture');
-            }
-        case 'windows':
-            switch (arch) {
-                case 'aarch64':
-                    throw new Error('Windows arm not yet supported');
-                case 'amd64':
-                    return 'pkl-windows-amd64.exe';
-                default:
-                    throw new Error('Unsupported architecture');
-            }
-        default:
-            throw new Error('Unsupported platform');
+    if (plat === 'windows') {
+        return `pkl-windows-${arch}.exe`;
     }
+    return `pkl-${plat}-${arch}`;
 }
 function determineTargetFileName(plat) {
     switch (plat) {

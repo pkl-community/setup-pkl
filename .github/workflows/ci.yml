@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CHECK_VERSION: 0.26.0
+
 jobs:
   test-typescript:
     name: TypeScript Tests
@@ -60,7 +63,12 @@ jobs:
         id: test-action
         uses: ./
         with:
-          pkl-version: 0.26.0
+          pkl-version: ${{ env.CHECK_VERSION }}
 
-      - name: Confirm download
-        run: pkl --version
+      - name: Confirm download (unix)
+        run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
+        if: matrix.os != 'windows-latest'
+
+      - name: Confirm download (windows)
+        run: .github/workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"
+        if: matrix.os == 'windows-latest'

@@ -32,6 +32,13 @@ jobs {
     steps {
       ...Steps.checkoutAndSetupNode
       new {
+        name = "Install pkl"
+        uses = "pkl-community/setup-pkl@v0"
+        with {
+          ["pkl-version"] = "0.26.3"
+        }
+      }
+      new {
         name = "Build dist/ Directory"
         run = "npm run bundle"
       }

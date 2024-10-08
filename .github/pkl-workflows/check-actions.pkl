@@ -4,7 +4,12 @@ import "modules/Steps.pkl"
 name = "Check Pkl Actions Converted"
 
 on {
-  push {}
+  pull_request {}
+  push {
+    branches {
+      "main"
+    }
+  }
 }
 
 permissions {

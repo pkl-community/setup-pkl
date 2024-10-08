@@ -5,14 +5,6 @@ checkout: GitHubAction.Step = new {
   uses = "actions/checkout@v4"
 }
 
-installPkl: GitHubAction.Step = new {
-  name = "Install pkl"
-  uses = "pkl-community/setup-pkl@v0"
-  with {
-    ["pkl-version"] = "0.26.3"
-  }
-}
-
 installNode: GitHubAction.Step = new {
   name = "Install node"
   uses = "actions/setup-node@v4"
@@ -25,11 +17,6 @@ installNode: GitHubAction.Step = new {
 installNodeDeps: GitHubAction.Step = new {
   name = "Install Dependencies"
   run = "npm ci"
-}
-
-checkoutAndInstallPkl: Listing<GitHubAction.Step> = new {
-  checkout
-  installPkl
 }
 
 checkoutAndSetupNode: Listing<GitHubAction.Step> = new {

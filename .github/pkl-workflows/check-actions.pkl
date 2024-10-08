@@ -16,7 +16,14 @@ jobs {
     name = "Check Actions converted"
     `runs-on` = "ubuntu-latest"
     steps {
-      ...Steps.checkoutAndInstallPkl
+      Steps.checkout
+      new {
+        name = "Install pkl"
+        uses = "pkl-community/setup-pkl@v0"
+        with {
+          ["pkl-version"] = "0.26.3"
+        }
+      }
       new {
         name = "Convert pkl actions to yaml"
         `working-directory` = ".github/pkl-workflows"

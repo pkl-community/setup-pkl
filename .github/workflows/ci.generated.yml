@@ -7,6 +7,8 @@ name: Continuous Integration
   push:
     branches:
     - main
+env:
+  CHECK_VERSION: 0.26.0
 permissions:
   contents: read
 jobs:
@@ -44,6 +46,10 @@ jobs:
     - name: Test Local Action
       uses: ./
       with:
-        pkl-version: 0.26.3
-    - name: Confirm download
-      run: pkl --version
+        pkl-version: ${{ env.CHECK_VERSION }}
+    - name: Confirm download (unix)
+      if: matrix.os != 'windows-latest'
+      run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}
+    - name: Confirm download (windows)
+      if: matrix.os == 'windows-latest'
+      run: .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"

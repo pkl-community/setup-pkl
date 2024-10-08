@@ -1,7 +1,7 @@
 {
   "name": "setup-pkl",
   "description": "GitHub Action for installing Pkl",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "author": "The Pkl Community",
   "private": true,
   "repository": {
@@ -23,7 +23,7 @@
     "coverage": "make-coverage-badge --output-path ./badges/coverage.svg",
     "format:write": "prettier --write **/*.ts",
     "format:check": "prettier --check **/*.ts",
-    "gen:actions": "pkl eval .github/pkl-workflows/*.pkl -o \".github/workflows/%{moduleName}.generated.yml\"",
+    "gen:actions": "./pkl eval .github/pkl-workflows/*.pkl -o \".github/workflows/%{moduleName}.generated.yml\"",
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "package": "ncc build src/index.ts --license licenses.txt && npm run gen:actions",
     "package:watch": "npm run package -- --watch",
@@ -67,9 +67,9 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.0",
-    "@typescript-eslint/eslint-plugin": "^7.12.0",
-    "@typescript-eslint/parser": "^7.12.0",
+    "@types/node": "^22.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
     "@vercel/ncc": "^0.38.1",
     "eslint": "^8.57.0",
     "eslint-plugin-github": "^5.0.1",

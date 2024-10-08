@@ -13,12 +13,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Install node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+    - name: Install Dependencies
+      run: npm ci
     - name: Install pkl
       uses: pkl-community/setup-pkl@v0
       with:
         pkl-version: 0.26.3
     - name: Convert pkl actions to yaml
-      working-directory: .github/pkl-workflows
-      run: ./updateWorkflows.sh
+      run: npm run gen:actions
     - name: Verify if pkl actions are converted
       run: git diff --exit-code

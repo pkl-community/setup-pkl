@@ -16,7 +16,7 @@ jobs {
     name = "Check Actions converted"
     `runs-on` = "ubuntu-latest"
     steps {
-      Steps.checkout
+      ...Steps.checkoutAndSetupNode
       new {
         name = "Install pkl"
         uses = "pkl-community/setup-pkl@v0"
@@ -26,8 +26,7 @@ jobs {
       }
       new {
         name = "Convert pkl actions to yaml"
-        `working-directory` = ".github/pkl-workflows"
-        run = "./updateWorkflows.sh"
+        run = "npm run gen:actions"
       }
       new {
         name = "Verify if pkl actions are converted"

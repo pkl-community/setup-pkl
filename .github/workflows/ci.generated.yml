@@ -49,7 +49,7 @@ jobs:
         pkl-version: ${{ env.CHECK_VERSION }}
     - name: Confirm download (unix)
       if: matrix.os != 'windows-latest'
-      run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}
+      run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
     - name: Confirm download (windows)
       if: matrix.os == 'windows-latest'
       run: .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"

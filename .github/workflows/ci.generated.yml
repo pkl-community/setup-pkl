@@ -1,0 +1,55 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
+
+name: Continuous Integration
+'on':
+  pull_request: {}
+  push:
+    branches:
+    - main
+env:
+  CHECK_VERSION: 0.26.0
+permissions:
+  contents: read
+jobs:
+  test-typescript:
+    name: TypeScript Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+    - name: Install Dependencies
+      run: npm ci
+    - name: Check Format
+      run: npm run format:check
+    - name: Lint
+      run: npm run lint
+    - name: Test
+      run: npm run ci-test
+  test-action:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-13
+        - macos-14
+        - windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Test Local Action
+      uses: ./
+      with:
+        pkl-version: ${{ env.CHECK_VERSION }}
+    - name: Confirm download (unix)
+      if: matrix.os != 'windows-latest'
+      run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
+    - name: Confirm download (windows)
+      if: matrix.os == 'windows-latest'
+      run: .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"

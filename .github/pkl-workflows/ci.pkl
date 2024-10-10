@@ -1,0 +1,80 @@
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
+
+name = "Continuous Integration"
+
+env {
+  ["CHECK_VERSION"] = "0.26.0"
+}
+
+on {
+  pull_request {}
+  push {
+    branches {
+      "main"
+    }
+  }
+}
+
+permissions {
+  contents = "read"
+}
+
+jobs {
+  ["test-typescript"] {
+    name = "TypeScript Tests"
+    `runs-on` = "ubuntu-latest"
+    steps {
+      ...Steps.checkoutAndSetupNode
+      new {
+        name = "Check Format"
+        run = "npm run format:check"
+      }
+      new {
+        name = "Lint"
+        run = "npm run lint"
+      }
+      new {
+        name = "Test"
+        run = "npm run ci-test"
+      }
+    }
+  }
+  ["test-action"] {
+    strategy {
+      matrix {
+        ["os"] = new {
+          "ubuntu-latest"
+          "macos-13" // macos-13 is amd64
+          "macos-14" // macos-14 is aarch64 (M1)
+          "windows-latest"
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.os }}"
+    steps {
+      Steps.checkout
+      new {
+        name = "Test Local Action"
+        uses = "./"
+        with {
+          ["pkl-version"] = "${{ env.CHECK_VERSION }}"
+        }
+      }
+      new {
+        name = "Confirm download (unix)"
+        `if` = "matrix.os != 'windows-latest'"
+        run = """
+          pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
+          """
+      }
+      new {
+        name = "Confirm download (windows)"
+        `if` = "matrix.os == 'windows-latest'"
+        run = """
+          .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"
+          """
+      }
+    }
+  }
+}

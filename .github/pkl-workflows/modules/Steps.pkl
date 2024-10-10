@@ -1,0 +1,26 @@
+import "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+
+checkout: GitHubAction.Step = new {
+  name = "Checkout"
+  uses = "actions/checkout@v4"
+}
+
+installNode: GitHubAction.Step = new {
+  name = "Install node"
+  uses = "actions/setup-node@v4"
+  with {
+    ["node-version-file"] = ".nvmrc"
+    ["cache"] = "npm"
+  }
+}
+
+installNodeDeps: GitHubAction.Step = new {
+  name = "Install Dependencies"
+  run = "npm ci"
+}
+
+checkoutAndSetupNode: Listing<GitHubAction.Step> = new {
+  checkout
+  installNode
+  installNodeDeps
+}

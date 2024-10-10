@@ -1,0 +1,39 @@
+# Do not modify!
+# This file was generated from a template using https://github.com/StefMa/pkl-gha
+
+name: Lint Codebase
+'on':
+  pull_request: {}
+  push:
+    branches:
+    - main
+permissions:
+  contents: read
+  packages: read
+  statuses: write
+jobs:
+  test-typescript:
+    name: Lint Codebase
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: npm
+    - name: Install Dependencies
+      run: npm ci
+    - name: Lint Codebase
+      env:
+        DEFAULT_BRANCH: main
+        FILTER_REGEX_EXCLUDE: dist/**/*
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VALIDATE_ALL_CODEBASE: 'true'
+        VALIDATE_JAVASCRIPT_STANDARD: 'false'
+        VALIDATE_JSCPD: 'false'
+        VALIDATE_TYPESCRIPT_STANDARD: 'false'
+      uses: super-linter/super-linter/slim@v6

@@ -1,0 +1,42 @@
+amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
+import "modules/Steps.pkl"
+
+name = "Check Pkl Actions Converted"
+
+on {
+  pull_request {}
+  push {
+    branches {
+      "main"
+    }
+  }
+}
+
+permissions {
+  contents = "read"
+}
+
+jobs {
+  ["check-actions"] {
+    name = "Check Actions converted"
+    `runs-on` = "ubuntu-latest"
+    steps {
+      ...Steps.checkoutAndSetupNode
+      new {
+        name = "Install pkl"
+        uses = "pkl-community/setup-pkl@v0"
+        with {
+          ["pkl-version"] = "0.26.3"
+        }
+      }
+      new {
+        name = "Convert pkl actions to yaml"
+        run = "npm run gen:actions"
+      }
+      new {
+        name = "Verify if pkl actions are converted"
+        run = "git diff --exit-code"
+      }
+    }
+  }
+}

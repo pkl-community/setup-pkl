@@ -3,6 +3,10 @@ import "modules/Steps.pkl"
 
 name = "Check Pkl Actions Converted"
 
+env {
+  ["TEST_PKL_VERSION"] = "0.28.2"
+}
+
 on {
   pull_request {}
   push {
@@ -26,7 +30,7 @@ jobs {
         name = "Install pkl"
         uses = "pkl-community/setup-pkl@v0"
         with {
-          ["pkl-version"] = "0.26.3"
+          ["pkl-version"] = "${{ env.TEST_PKL_VERSION }}"
         }
       }
       new {

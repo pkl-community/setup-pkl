@@ -1,10 +1,10 @@
 amends "package://pkg.pkl-lang.org/github.com/stefma/pkl-gha/com.github.action@0.0.3#/GitHubAction.pkl"
 import "modules/Steps.pkl"
 
-name = "Continuous Integration"
+name = "Run tests"
 
 env {
-  ["CHECK_VERSION"] = "0.26.0"
+  ["TEST_PKL_VERSION"] = "0.28.2"
 }
 
 on {
@@ -58,21 +58,21 @@ jobs {
         name = "Test Local Action"
         uses = "./"
         with {
-          ["pkl-version"] = "${{ env.CHECK_VERSION }}"
+          ["pkl-version"] = "${{ env.TEST_PKL_VERSION }}"
         }
       }
       new {
         name = "Confirm download (unix)"
         `if` = "matrix.os != 'windows-latest'"
         run = """
-          pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
+          pkl --version | grep "Pkl ${{ env.TEST_PKL_VERSION }}"
           """
       }
       new {
         name = "Confirm download (windows)"
         `if` = "matrix.os == 'windows-latest'"
         run = """
-          .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"
+          .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.TEST_PKL_VERSION }}"
           """
       }
     }

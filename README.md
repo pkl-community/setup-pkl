@@ -27,7 +27,7 @@ steps:
   - name: Install pkl
     uses: pkl-community/setup-pkl@v0
     with:
-      pkl-version: 0.25.2
+      pkl-version: 0.28.2
 ```
 
 ### Options

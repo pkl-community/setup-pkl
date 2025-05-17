@@ -1,7 +1,7 @@
 {
   "name": "setup-pkl",
   "description": "GitHub Action for installing Pkl",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "The Pkl Community",
   "private": true,
   "repository": {

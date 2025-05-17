@@ -12,6 +12,10 @@ import "modules/Steps.pkl"
 // expected from the build.
 name = "Check Transpiled JavaScript"
 
+env {
+  ["TEST_PKL_VERSION"] = "0.28.2"
+}
+
 on {
   pull_request {}
   push {
@@ -35,7 +39,7 @@ jobs {
         name = "Install pkl"
         uses = "pkl-community/setup-pkl@v0"
         with {
-          ["pkl-version"] = "0.26.3"
+          ["pkl-version"] = "${{ env.TEST_PKL_VERSION }}"
         }
       }
       new {

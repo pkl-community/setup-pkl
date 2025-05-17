@@ -1,14 +1,14 @@
 # Do not modify!
 # This file was generated from a template using https://github.com/StefMa/pkl-gha
 
-name: Continuous Integration
+name: Run tests
 'on':
   pull_request: {}
   push:
     branches:
     - main
 env:
-  CHECK_VERSION: 0.28.2
+  TEST_PKL_VERSION: 0.28.2
 permissions:
   contents: read
 jobs:
@@ -46,10 +46,10 @@ jobs:
     - name: Test Local Action
       uses: ./
       with:
-        pkl-version: ${{ env.CHECK_VERSION }}
+        pkl-version: ${{ env.TEST_PKL_VERSION }}
     - name: Confirm download (unix)
       if: matrix.os != 'windows-latest'
-      run: pkl --version | grep "Pkl ${{ env.CHECK_VERSION }}"
+      run: pkl --version | grep "Pkl ${{ env.TEST_PKL_VERSION }}"
     - name: Confirm download (windows)
       if: matrix.os == 'windows-latest'
-      run: .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.CHECK_VERSION }}"
+      run: .github/pkl-workflows/Check-Version.ps1 "Pkl ${{ env.TEST_PKL_VERSION }}"

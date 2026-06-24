@@ -32,15 +32,29 @@ jobs {
       Steps.installNodeDeps
       new {
         name = "Lint Codebase"
-        uses = "super-linter/super-linter/slim@v6"
+        uses = "super-linter/super-linter/slim@v8"
         env {
           ["DEFAULT_BRANCH"] = "main"
           ["FILTER_REGEX_EXCLUDE"] = "dist/**/*"
           ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}"
           ["VALIDATE_ALL_CODEBASE"] = "true"
+          // Biome duplicates the eslint + Prettier TypeScript checks we already run
+          // (`npm run lint` / the dedicated Prettier validators), so disable it.
+          ["VALIDATE_BIOME_FORMAT"] = "false"
+          ["VALIDATE_BIOME_LINT"] = "false"
+          // zizmor (GitHub Actions security audit) and trivy (dependency CVE scan) are new
+          // opinionated scanners; adopting them is a separate decision from this upgrade.
+          ["VALIDATE_GITHUB_ACTIONS_ZIZMOR"] = "false"
           ["VALIDATE_JAVASCRIPT_STANDARD"] = "false"
           ["VALIDATE_JSCPD"] = "false"
+          ["VALIDATE_TRIVY"] = "false"
+          // TypeScript is already linted via `npm run lint`; super-linter v8 bundles a newer
+          // eslint major that conflicts with our eslintrc-based config, so disable it here.
+          ["VALIDATE_TYPESCRIPT_ES"] = "false"
           ["VALIDATE_TYPESCRIPT_STANDARD"] = "false"
+          // The generated workflow YAML comes from pkl-gha and isn't
+          // Prettier-formatted, so skip the YAML formatter to avoid conflicts.
+          ["VALIDATE_YAML_PRETTIER"] = "false"
         }
       }
     }

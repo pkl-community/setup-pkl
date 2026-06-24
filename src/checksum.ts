@@ -1,9 +1,7 @@
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
-
-type ReleaseAsset = { name: string; digest?: string | null }
-type Release = { assets?: ReleaseAsset[] }
 
 /**
  * Verify a downloaded asset against the SHA-256 digest reported by the GitHub
@@ -53,18 +51,23 @@ async function fetchExpectedSha256(
   assetName: string,
   token: string
 ): Promise<string | undefined> {
-  const apiUrl = `https://api.github.com/repos/apple/pkl/releases/tags/${pklVersion}`
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-  }
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
+  if (!token) {
+    core.warning(
+      'Could not fetch release metadata for checksum verification: no token available.'
+    )
+    return undefined
   }
 
-  let response: Response
+  let assets: { name: string; digest?: string | null }[]
   try {
-    response = await fetch(apiUrl, { headers })
+    const octokit = github.getOctokit(token)
+    const release = await octokit.rest.repos.getReleaseByTag({
+      owner: 'apple',
+      repo: 'pkl',
+      tag: pklVersion
+    })
+    // The `digest` field is not yet present in the bundled Octokit types.
+    assets = release.data.assets as { name: string; digest?: string | null }[]
   } catch (error) {
     core.warning(
       `Could not fetch release metadata for checksum verification: ${
@@ -74,16 +77,7 @@ async function fetchExpectedSha256(
     return undefined
   }
 
-  if (!response.ok) {
-    core.warning(
-      `Could not fetch release metadata for checksum verification: ` +
-        `${response.status} ${response.statusText}`
-    )
-    return undefined
-  }
-
-  const release = (await response.json()) as Release
-  const digest = release.assets?.find(asset => asset.name === assetName)?.digest
+  const digest = assets.find(asset => asset.name === assetName)?.digest
 
   if (!digest || !digest.startsWith('sha256:')) {
     return undefined

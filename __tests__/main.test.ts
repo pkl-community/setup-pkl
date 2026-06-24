@@ -7,6 +7,7 @@
  */
 
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import * as main from '../src/main'
 import * as tc from '@actions/tool-cache'
 import { chmod } from 'fs/promises'
@@ -22,21 +23,38 @@ jest.mock('node:fs/promises', () => ({
   readFile: jest.fn()
 }))
 
+jest.mock('@actions/github')
+
 const readFileMock = readFile as jest.MockedFunction<typeof readFile>
+const getOctokitMock = github.getOctokit as jest.MockedFunction<
+  typeof github.getOctokit
+>
 
 // The asset name the action resolves for the host running these tests.
 const assetName = determinePlatformInfo().githubSourceAssetName
 
-/** Build a fetch mock returning a release payload for the given assets. */
+/** Stub getOctokit so the release lookup resolves with the given assets. */
 function mockReleaseResponse(
   assets: { name: string; digest?: string }[]
 ): void {
-  global.fetch = jest.fn().mockResolvedValue({
-    ok: true,
-    status: 200,
-    statusText: 'OK',
-    json: async () => ({ assets })
-  }) as unknown as typeof fetch
+  getOctokitMock.mockReturnValue({
+    rest: {
+      repos: {
+        getReleaseByTag: jest.fn().mockResolvedValue({ data: { assets } })
+      }
+    }
+  } as unknown as ReturnType<typeof github.getOctokit>)
+}
+
+/** Stub getOctokit so the release lookup rejects. */
+function mockReleaseError(error: Error): void {
+  getOctokitMock.mockReturnValue({
+    rest: {
+      repos: {
+        getReleaseByTag: jest.fn().mockRejectedValue(error)
+      }
+    }
+  } as unknown as ReturnType<typeof github.getOctokit>)
 }
 
 const runMock = jest.spyOn(main, 'run')
@@ -71,9 +89,11 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    getInputMock = jest
-      .spyOn(core, 'getInput')
-      .mockImplementation(name => (name === 'pkl-version' ? '0.26.3' : ''))
+    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => {
+      if (name === 'pkl-version') return '0.26.3'
+      if (name === 'token') return 'test-token'
+      return ''
+    })
 
     findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
     downloadToolMock = jest
@@ -171,11 +191,7 @@ describe('action', () => {
     })
 
     it('warns and proceeds when release metadata cannot be fetched', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found'
-      }) as unknown as typeof fetch
+      mockReleaseError(new Error('Not Found'))
 
       await main.run()
 

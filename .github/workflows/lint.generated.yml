@@ -33,7 +33,13 @@ jobs:
         FILTER_REGEX_EXCLUDE: dist/**/*
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         VALIDATE_ALL_CODEBASE: 'true'
+        VALIDATE_BIOME_FORMAT: 'false'
+        VALIDATE_BIOME_LINT: 'false'
+        VALIDATE_GITHUB_ACTIONS_ZIZMOR: 'false'
         VALIDATE_JAVASCRIPT_STANDARD: 'false'
         VALIDATE_JSCPD: 'false'
+        VALIDATE_TRIVY: 'false'
+        VALIDATE_TYPESCRIPT_ES: 'false'
         VALIDATE_TYPESCRIPT_STANDARD: 'false'
-      uses: super-linter/super-linter/slim@v6
+        VALIDATE_YAML_PRETTIER: 'false'
+      uses: super-linter/super-linter/slim@v8

@@ -4,7 +4,7 @@ import "modules/Steps.pkl"
 name = "Check Pkl Actions Converted"
 
 env {
-  ["TEST_PKL_VERSION"] = "0.28.2"
+  ["TEST_PKL_VERSION"] = "0.31.1"
 }
 
 on {

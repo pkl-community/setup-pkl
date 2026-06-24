@@ -13,7 +13,7 @@ import "modules/Steps.pkl"
 name = "Check Transpiled JavaScript"
 
 env {
-  ["TEST_PKL_VERSION"] = "0.28.2"
+  ["TEST_PKL_VERSION"] = "0.31.1"
 }
 
 on {

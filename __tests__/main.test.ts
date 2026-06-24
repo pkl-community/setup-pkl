@@ -10,10 +10,34 @@ import * as core from '@actions/core'
 import * as main from '../src/main'
 import * as tc from '@actions/tool-cache'
 import { chmod } from 'fs/promises'
+import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { determinePlatformInfo } from '../src/platform'
 
 jest.mock('fs/promises', () => ({
   chmod: jest.fn().mockResolvedValue(undefined)
 }))
+
+jest.mock('node:fs/promises', () => ({
+  readFile: jest.fn()
+}))
+
+const readFileMock = readFile as jest.MockedFunction<typeof readFile>
+
+// The asset name the action resolves for the host running these tests.
+const assetName = determinePlatformInfo().githubSourceAssetName
+
+/** Build a fetch mock returning a release payload for the given assets. */
+function mockReleaseResponse(
+  assets: { name: string; digest?: string }[]
+): void {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    json: async () => ({ assets })
+  }) as unknown as typeof fetch
+}
 
 const runMock = jest.spyOn(main, 'run')
 
@@ -23,6 +47,7 @@ let downloadToolMock: jest.SpiedFunction<typeof tc.downloadTool>
 let cacheFileMock: jest.SpiedFunction<typeof tc.cacheFile>
 let addPathMock: jest.SpiedFunction<typeof core.addPath>
 let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
+let warningMock: jest.SpiedFunction<typeof core.warning>
 
 describe('action without pkl-version', () => {
   beforeEach(() => {
@@ -59,6 +84,12 @@ describe('action', () => {
       .mockImplementation(async () => Promise.resolve('/cached/path'))
     addPathMock = jest.spyOn(core, 'addPath').mockImplementation()
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
+    warningMock = jest.spyOn(core, 'warning').mockImplementation()
+
+    // Default: release metadata with no matching digest, so checksum
+    // verification is skipped and the download path proceeds.
+    readFileMock.mockResolvedValue(Buffer.from('pkl-binary'))
+    mockReleaseResponse([])
   })
 
   it('uses cached PKL if available', async () => {
@@ -96,5 +127,63 @@ describe('action', () => {
     expect(findCacheMock).toHaveBeenCalled()
     expect(downloadToolMock).toHaveBeenCalled()
     expect(setFailedMock).toHaveBeenCalled()
+  })
+
+  describe('checksum verification', () => {
+    const fileContent = Buffer.from('pkl-binary-content')
+    const sha256 = createHash('sha256').update(fileContent).digest('hex')
+
+    beforeEach(() => {
+      readFileMock.mockResolvedValue(fileContent)
+    })
+
+    it('passes when the downloaded file matches the release digest', async () => {
+      mockReleaseResponse([{ name: assetName, digest: `sha256:${sha256}` }])
+
+      await main.run()
+
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
+
+    it('fails when the downloaded file does not match the digest', async () => {
+      mockReleaseResponse([{ name: assetName, digest: 'sha256:deadbeef' }])
+
+      await main.run()
+
+      expect(setFailedMock).toHaveBeenCalledWith(
+        expect.stringContaining('Checksum mismatch')
+      )
+      expect(cacheFileMock).not.toHaveBeenCalled()
+      expect(addPathMock).not.toHaveBeenCalled()
+    })
+
+    it('warns and proceeds when no digest is available', async () => {
+      mockReleaseResponse([{ name: 'some-other-asset' }])
+
+      await main.run()
+
+      expect(warningMock).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping checksum verification')
+      )
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
+
+    it('warns and proceeds when release metadata cannot be fetched', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found'
+      }) as unknown as typeof fetch
+
+      await main.run()
+
+      expect(warningMock).toHaveBeenCalledWith(
+        expect.stringContaining('Could not fetch release metadata')
+      )
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
   })
 })

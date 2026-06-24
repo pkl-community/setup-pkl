@@ -28567,6 +28567,102 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 6410:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.verifyChecksum = verifyChecksum;
+const core = __importStar(__nccwpck_require__(2186));
+const node_crypto_1 = __nccwpck_require__(6005);
+const promises_1 = __nccwpck_require__(3977);
+/**
+ * Verify a downloaded asset against the SHA-256 digest reported by the GitHub
+ * release API.
+ *
+ * Best-effort by design: Apple does not publish standalone checksum files, so
+ * the only machine-readable source is the release asset's `digest` field. If
+ * that digest is unavailable (older release, missing asset, or the metadata
+ * request fails) a warning is logged and verification is skipped rather than
+ * failing the action. A genuine mismatch throws.
+ *
+ * @param filePath Path to the downloaded file on disk.
+ * @param pklVersion The Pkl release tag, e.g. `0.31.1`.
+ * @param assetName The release asset name, e.g. `pkl-linux-amd64`.
+ * @param token Token used to read release metadata (defaults to the runner's
+ *   GITHUB_TOKEN via the action input).
+ */
+async function verifyChecksum(filePath, pklVersion, assetName, token) {
+    const expected = await fetchExpectedSha256(pklVersion, assetName, token);
+    if (!expected) {
+        core.warning(`Skipping checksum verification: no SHA-256 digest available for ${assetName} in release ${pklVersion}.`);
+        return;
+    }
+    const fileBuffer = await (0, promises_1.readFile)(filePath);
+    const actual = (0, node_crypto_1.createHash)('sha256').update(fileBuffer).digest('hex');
+    if (actual !== expected) {
+        throw new Error(`Checksum mismatch for ${assetName}: expected ${expected}, got ${actual}. ` +
+            `The downloaded file may be corrupted or tampered with.`);
+    }
+    core.debug(`Checksum verified for ${assetName}: sha256:${actual}`);
+}
+async function fetchExpectedSha256(pklVersion, assetName, token) {
+    const apiUrl = `https://api.github.com/repos/apple/pkl/releases/tags/${pklVersion}`;
+    const headers = {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+    };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+    let response;
+    try {
+        response = await fetch(apiUrl, { headers });
+    }
+    catch (error) {
+        core.warning(`Could not fetch release metadata for checksum verification: ${error instanceof Error ? error.message : String(error)}`);
+        return undefined;
+    }
+    if (!response.ok) {
+        core.warning(`Could not fetch release metadata for checksum verification: ` +
+            `${response.status} ${response.statusText}`);
+        return undefined;
+    }
+    const release = (await response.json());
+    const digest = release.assets?.find(asset => asset.name === assetName)?.digest;
+    if (!digest || !digest.startsWith('sha256:')) {
+        return undefined;
+    }
+    return digest.slice('sha256:'.length);
+}
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -28601,6 +28697,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const promises_1 = __nccwpck_require__(3292);
 const platform_1 = __nccwpck_require__(2999);
+const checksum_1 = __nccwpck_require__(6410);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -28621,6 +28718,10 @@ async function run() {
             // Download the PKL binary
             const pklBinaryPath = await tc.downloadTool(downloadUrl);
             core.debug(`Downloaded PKL binary to: ${pklBinaryPath}`);
+            // Verify the download against the SHA-256 digest reported by the
+            // GitHub release API (uses the runner's token via the `token` input).
+            const token = core.getInput('token');
+            await (0, checksum_1.verifyChecksum)(pklBinaryPath, pklVersion, platformInfo.githubSourceAssetName, token);
             // Set executable permissions
             const permissionsMode = 0o711;
             await (0, promises_1.chmod)(pklBinaryPath, permissionsMode);
@@ -28813,11 +28914,27 @@ module.exports = require("net");
 
 /***/ }),
 
+/***/ 6005:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:crypto");
+
+/***/ }),
+
 /***/ 5673:
 /***/ ((module) => {
 
 "use strict";
 module.exports = require("node:events");
+
+/***/ }),
+
+/***/ 3977:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:fs/promises");
 
 /***/ }),
 

@@ -10,6 +10,11 @@ inputs:
   pkl-version:
     description: The Pkl version to install.
     required: true
+  token:
+    description: >-
+      Token used to read release metadata for checksum verification. Defaults
+      to the workflow's GITHUB_TOKEN.
+    default: ${{ github.token }}
 
 runs:
   using: 'node24'

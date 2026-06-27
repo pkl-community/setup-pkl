@@ -32915,7 +32915,10 @@ async function fetchExpectedSha256(pklVersion, assetName, token) {
             repo: 'pkl',
             tag: pklVersion
         });
-        // The `digest` field is not yet present in the bundled Octokit types.
+        // The pinned @actions/github@6 bundles Octokit types (openapi-types@20)
+        // that predate the release-asset `digest` field, so cast to read it.
+        // Upgrading to @actions/github@9+ (openapi-types@26+) would type `digest`
+        // natively and make this cast unnecessary.
         assets = release.data.assets;
     }
     catch (error) {

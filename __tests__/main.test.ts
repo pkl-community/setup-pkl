@@ -7,13 +7,55 @@
  */
 
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import * as main from '../src/main'
 import * as tc from '@actions/tool-cache'
 import { chmod } from 'fs/promises'
+import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { determinePlatformInfo } from '../src/platform'
 
 jest.mock('fs/promises', () => ({
   chmod: jest.fn().mockResolvedValue(undefined)
 }))
+
+jest.mock('node:fs/promises', () => ({
+  readFile: jest.fn()
+}))
+
+jest.mock('@actions/github')
+
+const readFileMock = readFile as jest.MockedFunction<typeof readFile>
+const getOctokitMock = github.getOctokit as jest.MockedFunction<
+  typeof github.getOctokit
+>
+
+// The asset name the action resolves for the host running these tests.
+const assetName = determinePlatformInfo().githubSourceAssetName
+
+/** Stub getOctokit so the release lookup resolves with the given assets. */
+function mockReleaseResponse(
+  assets: { name: string; digest?: string }[]
+): void {
+  getOctokitMock.mockReturnValue({
+    rest: {
+      repos: {
+        getReleaseByTag: jest.fn().mockResolvedValue({ data: { assets } })
+      }
+    }
+  } as unknown as ReturnType<typeof github.getOctokit>)
+}
+
+/** Stub getOctokit so the release lookup rejects. */
+function mockReleaseError(error: Error): void {
+  getOctokitMock.mockReturnValue({
+    rest: {
+      repos: {
+        getReleaseByTag: jest.fn().mockRejectedValue(error)
+      }
+    }
+  } as unknown as ReturnType<typeof github.getOctokit>)
+}
 
 const runMock = jest.spyOn(main, 'run')
 
@@ -23,6 +65,7 @@ let downloadToolMock: jest.SpiedFunction<typeof tc.downloadTool>
 let cacheFileMock: jest.SpiedFunction<typeof tc.cacheFile>
 let addPathMock: jest.SpiedFunction<typeof core.addPath>
 let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
+let warningMock: jest.SpiedFunction<typeof core.warning>
 
 describe('action without pkl-version', () => {
   beforeEach(() => {
@@ -46,9 +89,11 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    getInputMock = jest
-      .spyOn(core, 'getInput')
-      .mockImplementation(name => (name === 'pkl-version' ? '0.26.3' : ''))
+    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => {
+      if (name === 'pkl-version') return '0.26.3'
+      if (name === 'token') return 'test-token'
+      return ''
+    })
 
     findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
     downloadToolMock = jest
@@ -59,6 +104,12 @@ describe('action', () => {
       .mockImplementation(async () => Promise.resolve('/cached/path'))
     addPathMock = jest.spyOn(core, 'addPath').mockImplementation()
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
+    warningMock = jest.spyOn(core, 'warning').mockImplementation()
+
+    // Default: release metadata with no matching digest, so checksum
+    // verification is skipped and the download path proceeds.
+    readFileMock.mockResolvedValue(Buffer.from('pkl-binary'))
+    mockReleaseResponse([])
   })
 
   it('uses cached PKL if available', async () => {
@@ -96,5 +147,59 @@ describe('action', () => {
     expect(findCacheMock).toHaveBeenCalled()
     expect(downloadToolMock).toHaveBeenCalled()
     expect(setFailedMock).toHaveBeenCalled()
+  })
+
+  describe('checksum verification', () => {
+    const fileContent = Buffer.from('pkl-binary-content')
+    const sha256 = createHash('sha256').update(fileContent).digest('hex')
+
+    beforeEach(() => {
+      readFileMock.mockResolvedValue(fileContent)
+    })
+
+    it('passes when the downloaded file matches the release digest', async () => {
+      mockReleaseResponse([{ name: assetName, digest: `sha256:${sha256}` }])
+
+      await main.run()
+
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
+
+    it('fails when the downloaded file does not match the digest', async () => {
+      mockReleaseResponse([{ name: assetName, digest: 'sha256:deadbeef' }])
+
+      await main.run()
+
+      expect(setFailedMock).toHaveBeenCalledWith(
+        expect.stringContaining('Checksum mismatch')
+      )
+      expect(cacheFileMock).not.toHaveBeenCalled()
+      expect(addPathMock).not.toHaveBeenCalled()
+    })
+
+    it('warns and proceeds when no digest is available', async () => {
+      mockReleaseResponse([{ name: 'some-other-asset' }])
+
+      await main.run()
+
+      expect(warningMock).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping checksum verification')
+      )
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
+
+    it('warns and proceeds when release metadata cannot be fetched', async () => {
+      mockReleaseError(new Error('Not Found'))
+
+      await main.run()
+
+      expect(warningMock).toHaveBeenCalledWith(
+        expect.stringContaining('Could not fetch release metadata')
+      )
+      expect(addPathMock).toHaveBeenCalledWith('/cached/path')
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
   })
 })

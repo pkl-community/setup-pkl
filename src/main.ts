@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
 import { chmod } from 'fs/promises'
 import { determinePlatformInfo } from './platform'
+import { verifyChecksum } from './checksum'
 
 /**
  * The main function for the action.
@@ -25,6 +26,16 @@ export async function run(): Promise<void> {
       // Download the PKL binary
       const pklBinaryPath = await tc.downloadTool(downloadUrl)
       core.debug(`Downloaded PKL binary to: ${pklBinaryPath}`)
+
+      // Verify the download against the SHA-256 digest reported by the
+      // GitHub release API (uses the runner's token via the `token` input).
+      const token = core.getInput('token')
+      await verifyChecksum(
+        pklBinaryPath,
+        pklVersion,
+        platformInfo.githubSourceAssetName,
+        token
+      )
 
       // Set executable permissions
       const permissionsMode = 0o711

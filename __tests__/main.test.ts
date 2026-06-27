@@ -6,29 +6,26 @@
  * variables following the pattern `INPUT_<INPUT_NAME>`.
  */
 
+import { describe, it, expect, vi, beforeEach, type MockInstance } from 'vitest'
 import * as core from '@actions/core'
-import * as github from '@actions/github'
+import { getOctokit } from '@actions/github'
 import * as main from '../src/main'
 import * as tc from '@actions/tool-cache'
-import { chmod } from 'fs/promises'
-import { readFile } from 'node:fs/promises'
+import { chmod, readFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { determinePlatformInfo } from '../src/platform'
 
-jest.mock('fs/promises', () => ({
-  chmod: jest.fn().mockResolvedValue(undefined)
+vi.mock('node:fs/promises', () => ({
+  chmod: vi.fn().mockResolvedValue(undefined),
+  readFile: vi.fn()
 }))
 
-jest.mock('node:fs/promises', () => ({
-  readFile: jest.fn()
+vi.mock('@actions/github', () => ({
+  getOctokit: vi.fn()
 }))
 
-jest.mock('@actions/github')
-
-const readFileMock = readFile as jest.MockedFunction<typeof readFile>
-const getOctokitMock = github.getOctokit as jest.MockedFunction<
-  typeof github.getOctokit
->
+const readFileMock = vi.mocked(readFile)
+const getOctokitMock = vi.mocked(getOctokit)
 
 // The asset name the action resolves for the host running these tests.
 const assetName = determinePlatformInfo().githubSourceAssetName
@@ -40,10 +37,10 @@ function mockReleaseResponse(
   getOctokitMock.mockReturnValue({
     rest: {
       repos: {
-        getReleaseByTag: jest.fn().mockResolvedValue({ data: { assets } })
+        getReleaseByTag: vi.fn().mockResolvedValue({ data: { assets } })
       }
     }
-  } as unknown as ReturnType<typeof github.getOctokit>)
+  } as unknown as ReturnType<typeof getOctokit>)
 }
 
 /** Stub getOctokit so the release lookup rejects. */
@@ -51,28 +48,28 @@ function mockReleaseError(error: Error): void {
   getOctokitMock.mockReturnValue({
     rest: {
       repos: {
-        getReleaseByTag: jest.fn().mockRejectedValue(error)
+        getReleaseByTag: vi.fn().mockRejectedValue(error)
       }
     }
-  } as unknown as ReturnType<typeof github.getOctokit>)
+  } as unknown as ReturnType<typeof getOctokit>)
 }
 
-const runMock = jest.spyOn(main, 'run')
+const runMock = vi.spyOn(main, 'run')
 
-let getInputMock: jest.SpiedFunction<typeof core.getInput>
-let findCacheMock: jest.SpiedFunction<typeof tc.find>
-let downloadToolMock: jest.SpiedFunction<typeof tc.downloadTool>
-let cacheFileMock: jest.SpiedFunction<typeof tc.cacheFile>
-let addPathMock: jest.SpiedFunction<typeof core.addPath>
-let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
-let warningMock: jest.SpiedFunction<typeof core.warning>
+let getInputMock: MockInstance
+let findCacheMock: MockInstance
+let downloadToolMock: MockInstance
+let cacheFileMock: MockInstance
+let addPathMock: MockInstance
+let setFailedMock: MockInstance
+let warningMock: MockInstance
 
 describe('action without pkl-version', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput')
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
+    getInputMock = vi.spyOn(core, 'getInput')
+    setFailedMock = vi.spyOn(core, 'setFailed').mockImplementation(() => {})
   })
 
   it('fails if pkl-version is not provided', async () => {
@@ -87,24 +84,24 @@ describe('action without pkl-version', () => {
 
 describe('action', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation(name => {
+    getInputMock = vi.spyOn(core, 'getInput').mockImplementation(name => {
       if (name === 'pkl-version') return '0.26.3'
       if (name === 'token') return 'test-token'
       return ''
     })
 
-    findCacheMock = jest.spyOn(tc, 'find').mockImplementation(() => '')
-    downloadToolMock = jest
+    findCacheMock = vi.spyOn(tc, 'find').mockImplementation(() => '')
+    downloadToolMock = vi
       .spyOn(tc, 'downloadTool')
       .mockImplementation(async () => Promise.resolve('/tmp/pkl'))
-    cacheFileMock = jest
+    cacheFileMock = vi
       .spyOn(tc, 'cacheFile')
       .mockImplementation(async () => Promise.resolve('/cached/path'))
-    addPathMock = jest.spyOn(core, 'addPath').mockImplementation()
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
-    warningMock = jest.spyOn(core, 'warning').mockImplementation()
+    addPathMock = vi.spyOn(core, 'addPath').mockImplementation(() => {})
+    setFailedMock = vi.spyOn(core, 'setFailed').mockImplementation(() => {})
+    warningMock = vi.spyOn(core, 'warning').mockImplementation(() => {})
 
     // Default: release metadata with no matching digest, so checksum
     // verification is skipped and the download path proceeds.

@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
-import { chmod } from 'fs/promises'
+import { chmod } from 'node:fs/promises'
 import { determinePlatformInfo } from './platform'
 import { verifyChecksum } from './checksum'
 

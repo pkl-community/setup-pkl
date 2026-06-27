@@ -8,7 +8,7 @@ name: Check Transpiled JavaScript
     branches:
     - main
 env:
-  TEST_PKL_VERSION: 0.28.2
+  TEST_PKL_VERSION: 0.31.1
 permissions:
   contents: read
 jobs:

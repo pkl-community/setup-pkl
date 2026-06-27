@@ -47,8 +47,18 @@
       "/node_modules/",
       "/dist/"
     ],
+    "moduleNameMapper": {
+      "^@actions/github$": "<rootDir>/__mocks__/@actions/github.ts"
+    },
     "transform": {
-      "^.+\\.ts$": "ts-jest"
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "commonjs"
+          }
+        }
+      ]
     },
     "coverageReporters": [
       "json-summary",
@@ -62,7 +72,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.10.1",
-    "@actions/github": "^6.0.0",
+    "@actions/github": "^9.1.1",
     "@actions/tool-cache": "^2.0.1"
   },
   "devDependencies": {

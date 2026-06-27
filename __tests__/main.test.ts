@@ -7,7 +7,7 @@
  */
 
 import * as core from '@actions/core'
-import * as github from '@actions/github'
+import { getOctokit } from '@actions/github'
 import * as main from '../src/main'
 import * as tc from '@actions/tool-cache'
 import { chmod } from 'fs/promises'
@@ -23,12 +23,11 @@ jest.mock('node:fs/promises', () => ({
   readFile: jest.fn()
 }))
 
-jest.mock('@actions/github')
-
+// @actions/github is ESM-only; it is resolved to a manual CommonJS mock via
+// moduleNameMapper (see package.json) so the dynamic import in checksum.ts can
+// be stubbed under the CommonJS Jest setup.
 const readFileMock = readFile as jest.MockedFunction<typeof readFile>
-const getOctokitMock = github.getOctokit as jest.MockedFunction<
-  typeof github.getOctokit
->
+const getOctokitMock = getOctokit as jest.MockedFunction<typeof getOctokit>
 
 // The asset name the action resolves for the host running these tests.
 const assetName = determinePlatformInfo().githubSourceAssetName
@@ -43,7 +42,7 @@ function mockReleaseResponse(
         getReleaseByTag: jest.fn().mockResolvedValue({ data: { assets } })
       }
     }
-  } as unknown as ReturnType<typeof github.getOctokit>)
+  } as unknown as ReturnType<typeof getOctokit>)
 }
 
 /** Stub getOctokit so the release lookup rejects. */
@@ -54,7 +53,7 @@ function mockReleaseError(error: Error): void {
         getReleaseByTag: jest.fn().mockRejectedValue(error)
       }
     }
-  } as unknown as ReturnType<typeof github.getOctokit>)
+  } as unknown as ReturnType<typeof getOctokit>)
 }
 
 const runMock = jest.spyOn(main, 'run')

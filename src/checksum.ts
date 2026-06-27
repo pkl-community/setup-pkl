@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import * as github from '@actions/github'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 
@@ -58,16 +57,16 @@ async function fetchExpectedSha256(
     return undefined
   }
 
-  let assets: { name: string; digest?: string | null }[]
+  let digest: string | null | undefined
   try {
+    const github = await import('@actions/github')
     const octokit = github.getOctokit(token)
     const release = await octokit.rest.repos.getReleaseByTag({
       owner: 'apple',
       repo: 'pkl',
       tag: pklVersion
     })
-    // The `digest` field is not yet present in the bundled Octokit types.
-    assets = release.data.assets as { name: string; digest?: string | null }[]
+    digest = release.data.assets.find(asset => asset.name === assetName)?.digest
   } catch (error) {
     core.warning(
       `Could not fetch release metadata for checksum verification: ${
@@ -76,8 +75,6 @@ async function fetchExpectedSha256(
     )
     return undefined
   }
-
-  const digest = assets.find(asset => asset.name === assetName)?.digest
 
   if (!digest || !digest.startsWith('sha256:')) {
     return undefined
